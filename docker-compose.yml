@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: grc_postgres
+
+    environment:
+      POSTGRES_USER: grc
+      POSTGRES_PASSWORD: grc
+      POSTGRES_DB: grc
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - ./backend:/app
+      #- postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grc"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: grc_backend
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
