@@ -1,0 +1,1 @@
+# module aggregator (collects all module routers + mounts them into FastAPI)
